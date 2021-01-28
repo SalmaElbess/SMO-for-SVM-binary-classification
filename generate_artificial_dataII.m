@@ -1,4 +1,14 @@
 function [x,y] = generate_artificial_dataII(N,d,ratio1)
+%generate_artificial_dataII: To generate artifical dataset with binary
+%target values.
+
+%Inputs:  
+        %N:       The number of data points needed
+        %d:       The number of features in each data example
+        %ration1: The number ratio of ones at each example
+%Outputs:
+        %x:       The data examples
+        %y:       The target values
 
 %Generate weight vector
 w = randi([0 1],[d 1]);
