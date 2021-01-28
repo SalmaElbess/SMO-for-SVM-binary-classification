@@ -1,5 +1,4 @@
-
-function [L,H] = compute_LH_sayed(alpha1,alpha2,y1,y2,C)
+function [L,H] = compute_LH_smo(alpha1,alpha2,y1,y2,C)
 %COMPUTE_LH: compute the alphas range (L <= alpha <= H)
 % Inputs: 
     % alpha1,alpha2: The 2 chosen alphas
