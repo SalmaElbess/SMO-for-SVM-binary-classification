@@ -12,6 +12,7 @@ data = readmatrix('bill_authentication.csv');
 range = (400:800);
 x = data(range,1:end-1)';
 y = data(range,end)';
+y(y==0) = -1;
 [d ,N] = size(x);
 N_test = floor(N/10);
 y = y';
