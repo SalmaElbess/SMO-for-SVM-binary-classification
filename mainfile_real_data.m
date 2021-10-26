@@ -1,15 +1,8 @@
-%% reading csv file
-%use https://www.mathworks.com/help/matlab/ref/readmatrix.html
-%or https://www.mathworks.com/help/matlab/ref/readtable.html
-%----------------------------------------------------------------
-%y = [1 -1 1 1]; %target
-%x = [1 2 3 4; %features
-%    5 6 7 8];
-%initialize
-clc; clear;
 %% get data
+clc; clear;
 data = readmatrix('bill_authentication.csv');
-range = (400:800);
+data = data(randperm(size(data, 1)), :);
+range = (1:500);
 x = data(range,1:end-1)';
 y = data(range,end)';
 y(y==0) = -1;
@@ -19,16 +12,19 @@ y = y';
 x_test = x(:,N-N_test+1:end); y_test = y(N-N_test+1:end,1);
 x = x(:,1:N-N_test);         y = y(1:N-N_test,1);
 [d ,N] = size(x);
+%Initializations
 alphas = zeros(size(y));
 b = 0;
+tol = 0.001; %based on Platt 1998
+%% train and test our implemetnation 
 examineAll = 1;
 numChanged = 0;
-C = 1;
-tol = 0.001; %based on Platt 1998
 errors = y.*(-1); %assuming that all u vector initially = 0
+C = 100;
 w = zeros(d,1);
+w_old = w;
 clf_function = @(t) w'*t - b;
-
+imp_start = now;
 while(examineAll || numChanged > 0)
     numChanged = 0;
     if (examineAll)
@@ -50,13 +46,39 @@ while(examineAll || numChanged > 0)
             end
         end
     end
+%      abs(abs(w_old)-abs(w));
+         if(success)
+             if(abs(abs(w_old)-abs(w)) < 0.003*ones(size(w)))
+                 break;
+             end
+         end
+          w_old = w;
         if (examineAll)
             examineAll = 0;
         elseif numChanged == 0
             examineAll = 1;
         end
 end
+imp_end= now;
+% training and test accurecy 
 [y_predicted, error] = predict_smo(w,b,x_test,y_test);
-100*(1- error/length(y_predicted))
+our_test_acc = 100*(1- error/length(y_predicted));
 [y_predicted, error] = predict_smo(w,b,x,y);
-100*(1- error/length(y_predicted))
+out_train_acc = 100*(1- error/length(y_predicted));
+%calculate time in seconds
+implemented_time = (imp_end - imp_start)*86400;
+%% test Matlab built-in function
+ready_start = now;
+SVMModel = fitcsvm(x',y,'KKTTolerance',tol,'Solver','SMO','Alpha',zeros(size(y)),'BoxConstraint',C,'ClipAlphas',true);%,'OptimizeHyperparameters','auto')
+ready_end = now;
+%calculate time in seconds
+ready_time = (ready_end - ready_start)*86400;
+%test accurecy 
+label = predict(SVMModel,x_test');
+matlab_test_acc = 100*(1- (sum(label ~= y_test)/length(y_test)));
+%getting some parameters for comparison
+Matlab_weights  = SVMModel.Beta;
+Matlab_bias = SVMModel.Bias;
+our_weights = w;
+our_bias = b;
+ 
